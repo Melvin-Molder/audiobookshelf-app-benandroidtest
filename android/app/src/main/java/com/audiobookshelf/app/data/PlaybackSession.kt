@@ -214,20 +214,27 @@ class PlaybackSession(
    * Builds the current session metadata, including the cover art bitmap if it has already been resolved.
    */
   @JsonIgnore
-  fun getMediaMetadataCompat(ctx: Context): MediaMetadataCompat {
+  fun getMediaMetadataCompat(
+          ctx: Context,
+          durationMs: Long = totalDurationMs,
+          chapterTitle: String? = null
+  ): MediaMetadataCompat {
     val coverUri = getCoverUri(ctx)
+    val description = chapterTitle?.takeIf { it.isNotBlank() } ?: displayAuthor
+      val subtitle = chapterTitle?.takeIf { it.isNotBlank() } ?: displayAuthor
 
     val metadataBuilder =
             MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, displayTitle)
                     .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayAuthor)
+          .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, subtitle)
                     .putString(MediaMetadataCompat.METADATA_KEY_AUTHOR, displayAuthor)
-                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayAuthor)
-                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, displayAuthor)
+          .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, subtitle)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, description)
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, displayAuthor)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, displayAuthor)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, description)
                     .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
                     .putString(
                             MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI,
                             coverUri.toString()

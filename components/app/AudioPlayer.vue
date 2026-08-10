@@ -800,8 +800,7 @@ export default {
       })
     },
     updateUseChapterTrack() {
-      // Chapter track in NowPlaying only supported on iOS for now
-      if (this.$platform === 'ios') {
+      if (this.$platform === 'ios' || this.$platform === 'android') {
         AbsAudioPlayer.setChapterTrack({ enabled: this.playerSettings.useChapterTrack })
       }
     },
@@ -912,6 +911,7 @@ export default {
     },
     async init() {
       await this.loadPlayerSettings()
+      this.updateUseChapterTrack()
 
       AbsAudioPlayer.addListener('onPlaybackSession', this.onPlaybackSession)
       AbsAudioPlayer.addListener('onPlaybackClosed', this.onPlaybackClosed)

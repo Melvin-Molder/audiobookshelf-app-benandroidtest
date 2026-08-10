@@ -362,6 +362,16 @@ class AbsAudioPlayer : Plugin() {
   }
 
   @PluginMethod
+  fun setChapterTrack(call: PluginCall) {
+    val enabled = call.getBoolean("enabled", false) == true
+
+    Handler(Looper.getMainLooper()).post {
+      playerNotificationService.setUseChapterTrack(enabled)
+      call.resolve()
+    }
+  }
+
+  @PluginMethod
   fun closePlayback(call: PluginCall) {
     Handler(Looper.getMainLooper()).post {
       playerNotificationService.closePlayback()
