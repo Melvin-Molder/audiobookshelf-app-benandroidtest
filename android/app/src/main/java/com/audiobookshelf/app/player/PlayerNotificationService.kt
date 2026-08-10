@@ -322,9 +322,7 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
     val queueNavigator: TimelineQueueNavigator =
             object : TimelineQueueNavigator(mediaSession) {
               override fun getSupportedQueueNavigatorActions(player: Player): Long {
-                return PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                        PlaybackStateCompat.ACTION_PLAY or
-                        PlaybackStateCompat.ACTION_PAUSE
+                return 0L
               }
 
               override fun getMediaDescription(
@@ -624,7 +622,14 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
                     JumpForwardCustomActionProvider(),
                     ChangePlaybackSpeedCustomActionProvider() // Will be pushed to far left
             )
-    if (playbackSession.mediaPlayer != PLAYER_CAST && mediaItems.size > 1) {
+    if (useChapterTrack && playbackSession.chapters.size > 1) {
+      customActionProviders.addAll(
+              listOf(
+                      SkipBackwardCustomActionProvider(),
+                      SkipForwardCustomActionProvider(),
+              )
+      )
+    } else if (playbackSession.mediaPlayer != PLAYER_CAST && mediaItems.size > 1) {
       customActionProviders.addAll(
               listOf(
                       SkipBackwardCustomActionProvider(),
@@ -890,6 +895,13 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
     return currentPlaybackSession?.getNextChapterForTime(this.getCurrentTime())
   }
 
+  private fun getPreviousBookChapter(): BookChapter? {
+    val playbackSession = currentPlaybackSession ?: return null
+    val currentChapter = getCurrentBookChapter() ?: return null
+    val currentIndex = playbackSession.chapters.indexOf(currentChapter)
+    return playbackSession.chapters.getOrNull(currentIndex - 1)
+  }
+
   fun getEndTimeOfNextChapterOrTrack(): Long? {
     return getNextBookChapter()?.endMs ?: currentPlaybackSession?.getNextTrackEndTime()
   }
@@ -1049,10 +1061,18 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
   }
 
   fun skipToPrevious() {
+    if (useChapterTrack) {
+      getPreviousBookChapter()?.let { seekPlayer(it.startMs) }
+      return
+    }
     currentPlayer.seekToPrevious()
   }
 
   fun skipToNext() {
+    if (useChapterTrack) {
+      getNextBookChapter()?.let { seekPlayer(it.startMs) }
+      return
+    }
     currentPlayer.seekToNext()
   }
 
@@ -1083,6 +1103,7 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
 
   fun setUseChapterTrack(enabled: Boolean) {
     useChapterTrack = enabled
+    currentPlaybackSession?.let { setMediaSessionConnectorCustomActions(it) }
     refreshChapterProgress()
   }
 
