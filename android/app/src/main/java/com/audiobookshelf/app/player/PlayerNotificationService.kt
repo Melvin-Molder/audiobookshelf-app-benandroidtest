@@ -262,6 +262,7 @@ class PlayerNotificationService : MediaBrowserServiceCompat() {
 
     // Initialize media manager
     mediaManager = MediaManager(apiHandler, ctx)
+    useChapterTrack = mediaManager.getSavedUseChapterTrack()
 
     channelId =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

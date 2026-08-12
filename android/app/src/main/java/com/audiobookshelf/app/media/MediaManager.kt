@@ -115,6 +115,18 @@ class MediaManager(private var apiHandler: ApiHandler, var ctx: Context) {
     return 1f
   }
 
+  fun getSavedUseChapterTrack(): Boolean {
+    val sharedPrefs = ctx.getSharedPreferences("CapacitorStorage", Activity.MODE_PRIVATE)
+    val playerSettingsPref = sharedPrefs.getString("playerSettings", null) ?: return false
+
+    return try {
+      JSObject(playerSettingsPref).optBoolean("useChapterTrack", false)
+    } catch (je: JSONException) {
+      Log.e(tag, "Failed to parse playerSettings JSON ${je.localizedMessage}")
+      false
+    }
+  }
+
   fun setSavedPlaybackRate(newRate: Float) {
     val sharedPrefs = ctx.getSharedPreferences("CapacitorStorage", Activity.MODE_PRIVATE)
     val sharedPrefEditor = sharedPrefs.edit()
